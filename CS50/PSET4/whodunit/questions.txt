@@ -1,0 +1,22 @@
+1.  stdint.h is a header file designed to standardize the size of integers so that the length (i.e. number of bits that represent the number) 
+    remain the same across various platforms and implementations of C. In other words, instead of just declaring an "int" you can 
+    specifically declare an 8bit unsigned int or otherwise.
+2.  This relates to the answer in question 1. If i'm only expecting a single byte to represent my number in a file, I have to garuntee 
+    that the size of the integer is just 8bits (I need to make sure that it is of type uint8_t or int8_t). I also want to make sure that I'm interpretting 
+    the number correctly. If the number is a signed int, then the first bit in the number is the sign of the number and is not significant
+    in describing the actual value of the number. Therefore, a signed 8bit int can only represent the number 127 since flipping the next 
+    bit to a 1 effectivly represents -127. Using a specific int garuntees that I am reading these bytes correctly.
+3.  BYTE = 1 byte; DWORD = 4 bytes; LONG = 4 bytes; WORD = 2 bytes
+4.  ASCII = B, M; DECIMAL = 66, 77; HEX = 0x42, 0x4D;
+5.  bfSize = The size, in bytes, of the bitmap file (i.e. 246 for smiley.bmp); biSize = The number of bytes required by the structure (i.e. 40 for smiley.bmp);
+6.  biHeight refers to the height of the bitmap in pixels. If this value is negative, it means that the bitmap is a "top-down" DIB with its origin 
+    in the upper left corner.
+7.  biBitCount
+8.  If for whatever reason you are trying to get a pointer to a place in memory that you don't have access to, or if the file you are looking for 
+    does not exist... the call to "fopen" will return with NULL. 
+9.  The third argument in "fread" is the number of elements you want to read. In this case, you just want to read in one BITMAPFILEHEADER 
+    and one BITMAPINFOHEADER so you just put the number 1.
+10. It adds 3 bytes of padding.
+11. "fseek" moves the pointer from it's current position to any other position in the file depending on the parameters you give it.
+12. "SEEK_CUR" represents the current position of the pointer in a file (this entry in the fseek function is a reference point). 
+    If you give "fseek" the values (filePointer, 3, SEEK_CUR) - you are telling it to move 3 bytes forward from its current position.
