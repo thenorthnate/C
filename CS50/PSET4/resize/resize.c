@@ -1,5 +1,5 @@
 /**
- * Copies a BMP piece by piece, just because.
+ * Resizes the image to whatever the value is that gets entered.
  */
        
 #include <stdio.h>
@@ -79,25 +79,25 @@ int main(int argc, char *argv[])
         bi.biWidth = bi.biWidth * upSize;
         bi.biHeight = bi.biHeight * upSize;
         newPadding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-        bi.biSizeImage = (bi.biWidth + newPadding) * bi.biHeight;
+        bi.biSizeImage = (DWORD) (((bi.biWidth * 3) + newPadding) * abs(bi.biHeight));
         bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
     } else {
         // you want to make the image smaller here 
-        bi.biWidth = (int) (bi.biWidth * f);
+        bi.biWidth = (LONG) (bi.biWidth * f);
         if (bi.biWidth == 0) {
             // never allow the image to get smaller than a single pixel
             bi.biWidth = 1;
         }
         
         // check to make sure image is at least a single pixle tall... also preserve sign
-        if ((int) (bi.biHeight * f) == 0) {
-            bi.biHeight = (int) (bi.biHeight/bi.biHeight);
+        if ((LONG) (bi.biHeight * f) == 0) {
+            bi.biHeight = (LONG) (bi.biHeight/bi.biHeight);
         } else {
-            bi.biHeight = (int) (bi.biHeight * f);
+            bi.biHeight = (LONG) (bi.biHeight * f);
         }
         newPadding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-        bi.biSizeImage = (bi.biWidth + newPadding) * bi.biHeight;
-        bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+        bi.biSizeImage = (DWORD) (((bi.biWidth * 3) + newPadding) * abs(bi.biHeight));
+        bf.bfSize = (DWORD) (bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER));
     }
 
     // write outfile's BITMAPFILEHEADER
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     
     if (upSize > 0) {
         // upSize is a value greater than 1... we want to make the image larger
-        printf("Scaling image up by: %i\n", upSize);
+        // printf("Scaling image up by: %i\n", upSize);
         lineInNewFile = (char *) malloc(sizeof(RGBTRIPLE) * bi.biWidth);
         if (lineInNewFile == NULL) {
             return 5;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                         
                         for (int l = 0; l < upSize; l++) {
                             // write RGB triple to outfile as many times as scaled up by
-                            fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                            // fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
                             lineInNewFile[newLineIndex] = triple.rgbtBlue;
                             lineInNewFile[newLineIndex + 1] = triple.rgbtGreen;
                             lineInNewFile[newLineIndex + 2] = triple.rgbtRed;
@@ -145,10 +145,13 @@ int main(int argc, char *argv[])
                             
                         }
                     }
+                    fwrite(lineInNewFile, (sizeof(RGBTRIPLE) * bi.biWidth), 1, outptr);
+                    
                 } else {
                     // you have read in the line once already. Now just re-write the same line over and over until m hits upSize
                     
                     fwrite(lineInNewFile, (sizeof(RGBTRIPLE) * bi.biWidth), 1, outptr);
+                    
                 }
                 count++;
                     
@@ -164,9 +167,9 @@ int main(int argc, char *argv[])
             
         }
         free(lineInNewFile);
-    } else {
+    } else { //if (upSize < 0) {
         // you are down sizing the file... 
-        printf("Scaling image down to %i percent of its original size\n", (int) (f * 100));
+        // printf("Scaling image down to %i percent of its original size\n", (int) (f * 100));
         
         // this will work for every value... let's just start here and then delete the if when it works!
         float saveIndexWidth = (float) originalWidth/(float) bi.biWidth;
@@ -222,7 +225,6 @@ int main(int argc, char *argv[])
 
     }
     
-
     // close infile
     fclose(inptr);
 
